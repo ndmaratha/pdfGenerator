@@ -10,31 +10,13 @@ app.use(cors());
 const allData = [
 	{
 		name: "Nayan",
-		header: "Header",
+		header: "Page 6",
 		title: "Page 1 Title",
 		content: "Table of Content",
 	},
 	{
 		name: "SomeOne",
-		header: "Header 1",
-		title: "The 21st-Century Student - Navigating the Academic Maze",
-		content: "Content goes here...",
-	},
-	{
-		name: "SomeOne",
-		header: "Header 3",
-		title: "The 21st-Century Student - Navigating the Academic Maze",
-		content: "Content goes here...",
-	},
-	{
-		name: "SomeOne",
-		header: "Header 4",
-		title: "The 21st-Century Student - Navigating the Academic Maze",
-		content: "Content goes here...",
-	},
-	{
-		name: "SomeOne",
-		header: "Header 5",
+		header: "Table of Content2",
 		title: "The 21st-Century Student - Navigating the Academic Maze",
 		content: "Content goes here...",
 	},
@@ -63,9 +45,10 @@ app.post("/generate-pdf", (req, res) => {
 		res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 		doc.pipe(res);
 
-		// Add first page
+		// ✅ ADD FIRST PAGE BEFORE ACCESSING doc.page.width
 		doc.addPage();
 
+		// Now, `doc.page` is defined
 		const pageWidth = doc.page.width;
 		const pageHeight = doc.page.height;
 
@@ -75,78 +58,56 @@ app.post("/generate-pdf", (req, res) => {
 		const footerHeight = mmToPt(12);
 
 		const addPageDecorations = (pageNum, headerText) => {
-			// Page dimensions
-			const pageWidth = doc.page.width;
-			const pageHeight = doc.page.height;
-			const headerHeight = 50;
-			const footerHeight = 50;
-			const borderWidth = 8.5;
+			// Assuming these variables are defined elsewhere in your code
+			const pageWidth = doc.page.width; // Default A4: 595.28
+			const pageHeight = doc.page.height; // Default A4: 841.89
+			const headerHeight = 50; // Adjust as needed
+			const footerHeight = 50; // Adjust as needed
+			const borderWidth = 8.5; // ~3mm in points (1mm ≈ 2.83 points)
 
-			// VIBGYOR colors array
-			const vibgyorColors = [
-				"#8F00FF", // Violet
-				"#4B0082", // Indigo
-				"#0000FF", // Blue
-				"#00FF00", // Green
-				"#FFFF00", // Yellow
-				"#FFA500", // Orange
-				"#FF0000", // Red
-			];
-
-			// Determine color index
-			const colorIndex = (pageNum - 1) % vibgyorColors.length;
-			const currentColor = vibgyorColors[colorIndex];
-
-			// Header with VIBGYOR color
-			doc.rect(0, 0, pageWidth, headerHeight).fill(currentColor);
-
-			// Add image in the left corner of the header
-			const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg"; // Use correct Windows path
-			doc.image(imagePath, 13, 10, {
-				width: 40,
-				height: 35,
-			});
-
-			// Header text
+			// Header (unchanged)
+			doc.rect(0, 0, pageWidth, headerHeight).fill("#FF0000");
 			doc
 				.fontSize(22)
 				.fillColor("white")
-				.text(headerText, 50, 20, { align: "center", width: pageWidth - 60 });
+				.text(headerText, 10, 20, { align: "center", width: pageWidth - 20 });
 
-			// Footer with VIBGYOR color
+			// Footer
 			const footerY = pageHeight - footerHeight;
-			doc.rect(0, footerY, pageWidth, footerHeight).fill(currentColor);
+			doc.rect(0, footerY, pageWidth, footerHeight).fill("#FF0000");
 
-			// Center name
+			// Center name (positioned at left or center, adjusted to not overlap circle)
 			doc
 				.fontSize(15)
 				.fillColor("white")
 				.text(`${centerName}`, 10, footerY + 15, {
-					align: "center",
-					width: pageWidth - 60,
+					align: "center", // Changed to left to avoid overlap
+					width: pageWidth - 60, // Reduced width to leave space for circle
 				});
 
 			// Circle and page number at right corner
 			const circleRadius = 14;
-			const circleX = pageWidth - circleRadius - 16;
-			const circleY = footerY + footerHeight / 2.3;
+			const circleX = pageWidth - circleRadius - 16; // 10 points from right edge
+			const circleY = footerY + footerHeight / 2.3; // Vertically centered in footer
 
+			// Draw orange circle
 			doc
 				.fillColor("#FFA500")
 				.lineWidth(0.5)
-				.strokeColor("black")
+				.strokeColor("black") // Orange border to match footer
 				.circle(circleX, circleY, circleRadius)
 				.fillAndStroke();
 
+			// Add page number centered in the circle
 			doc
 				.fontSize(12)
 				.fillColor("black")
 				.text(`${pageNum}`, circleX - circleRadius, circleY - 6, {
-					width: circleRadius * 1.8,
-					align: "center",
+					width: circleRadius * 1.8, // Matches circle diameter
+					align: "center", // Centers text horizontally
 				});
 
-			// Page border
+			// Page border (unchanged)
 			doc
 				.lineWidth(borderWidth)
 				.strokeColor("yellow")
@@ -193,6 +154,7 @@ app.post("/generate-pdf", (req, res) => {
 				for (let j = 0; j < rowData.length; j++) {
 					let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
 					doc.lineWidth(0.5);
+					// ✅ Your original table border settings
 					doc
 						.rect(cellX, rowY, columnWidths[j], rowHeight)
 						.strokeColor("black")
@@ -230,39 +192,13 @@ app.post("/generate-pdf", (req, res) => {
 			rowHeight
 		);
 
-		// // Generate individual pages
-		// for (const { header, title, content } of allData) {
-		// 	doc.addPage();
-		// 	addPageDecorations(pageCounter++, header);
-
-		// 	doc.fontSize(18).fillColor("black").text(title, 50, 100);
-		// 	doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
-		// }
-		// Individual pages with content and conditional image
+		// ✅ Generate individual pages for each entry
 		for (const { header, title, content } of allData) {
 			doc.addPage();
 			addPageDecorations(pageCounter++, header);
 
-			// Add content
 			doc.fontSize(18).fillColor("black").text(title, 50, 100);
 			doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
-
-			// Calculate content height and available space
-			const contentBottom = doc.y; // Current y-position after adding content
-			const availableHeight = pageHeight - headerHeight - footerHeight; // ~737 points
-			const contentHeight = contentBottom - headerHeight; // Height used by content
-
-			// Check if content uses less than half the available space
-			if (contentHeight < availableHeight / 2) {
-				// Add image in remaining space
-				const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg";
-				const imageX = (pageWidth - 200) / 2; // Center horizontally (image width = 200)
-				const imageY = contentBottom + 20; // 20 points below content
-				doc.image(imagePath, imageX, imageY, {
-					width: 200, // Larger image for remaining space
-					height: 200,
-				});
-			}
 		}
 
 		doc.end();
