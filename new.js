@@ -212,10 +212,38 @@ app.post("/generate-pdf", (req, res) => {
 		};
 
 		const generateTable = (doc, data, x, y, columnWidths, rowHeight) => {
-			for (let i = 0; i < data.length; i++) {
-				let rowY = y + i * rowHeight;
+			// Ensure columnWidths is defined and has correct length
+			if (!Array.isArray(columnWidths) || columnWidths.length !== 2) {
+				throw new Error(
+					"columnWidths must be an array with exactly 2 elements"
+				);
+			}
 
-				for (let j = 0; j < data[i].length; j++) {
+			// Define table headers
+			const headers = ["Content", "PageNo"];
+
+			// Draw header row
+			let rowY = y;
+			for (let j = 0; j < headers.length; j++) {
+				let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
+				doc.lineWidth(0.5);
+				doc
+					.rect(cellX, rowY, columnWidths[j], rowHeight)
+					.strokeColor("black")
+					.stroke();
+
+				doc.fontSize(10).text(headers[j], cellX + 8, rowY + 8, {
+					width: columnWidths[j] - 10,
+					align: "left",
+				});
+			}
+
+			// Draw data rows with content and incremental page numbers
+			for (let i = 0; i < data.length; i++) {
+				rowY = y + (i + 1) * rowHeight; // Start after header row
+				const rowData = [data[i].content, (i + 2).toString()]; // PageNo starts from 2
+
+				for (let j = 0; j < rowData.length; j++) {
 					let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
 					doc.lineWidth(0.5);
 					doc
@@ -223,7 +251,7 @@ app.post("/generate-pdf", (req, res) => {
 						.strokeColor("black")
 						.stroke();
 
-					doc.fontSize(10).text(data[i][j], cellX + 8, rowY + 8, {
+					doc.fontSize(10).text(rowData[j], cellX + 8, rowY + 8, {
 						width: columnWidths[j] - 10,
 						align: "left",
 					});
@@ -231,35 +259,27 @@ app.post("/generate-pdf", (req, res) => {
 			}
 		};
 
+		// In the app.post("/generate-pdf") route:
 		let pageCounter = 1;
 		addPageDecorations(pageCounter++, "Table of Contents");
 
 		// Table settings
-		const tableX1 = 50,
+		const tableX1 = 20,
 			tableX2 = 300;
-		const tableY = 100;
+		const tableY = 80;
 		const rowHeight = 40,
-			columnWidth = 200;
+			columnWidths = [230, 50]; // Define columnWidths here
 
-		const leftTableData = allData
-			.slice(0, allData.length - 1)
-			.map((d) => [d.title]);
-		const rightTableData = allData.slice(1).map((d) => [d.title]);
+		const leftTableData = allData.slice(0, allData.length - 1);
+		const rightTableData = allData.slice(1);
 
-		generateTable(
-			doc,
-			leftTableData,
-			tableX1,
-			tableY,
-			[columnWidth],
-			rowHeight
-		);
+		generateTable(doc, leftTableData, tableX1, tableY, columnWidths, rowHeight);
 		generateTable(
 			doc,
 			rightTableData,
 			tableX2,
 			tableY,
-			[columnWidth],
+			columnWidths,
 			rowHeight
 		);
 
