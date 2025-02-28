@@ -63,10 +63,9 @@ app.post("/generate-pdf", (req, res) => {
 		res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 		doc.pipe(res);
 
-		// ✅ ADD FIRST PAGE BEFORE ACCESSING doc.page.width
+		// Add first page
 		doc.addPage();
 
-		// Now, `doc.page` is defined
 		const pageWidth = doc.page.width;
 		const pageHeight = doc.page.height;
 
@@ -76,15 +75,14 @@ app.post("/generate-pdf", (req, res) => {
 		const footerHeight = mmToPt(12);
 
 		const addPageDecorations = (pageNum, headerText) => {
-			// Assuming these variables are defined elsewhere in your code
-			const pageWidth = doc.page.width; // Default A4: 595.28
-			const pageHeight = doc.page.height; // Default A4: 841.89
-			const headerHeight = 50; // Adjust as needed
-			const footerHeight = 50; // Adjust as needed
-			const borderWidth = 8.5; // ~3mm in points (1mm ≈ 2.83 points)
-			const centerName = "Your Center"; // Define centerName if not already defined
+			// Page dimensions
+			const pageWidth = doc.page.width;
+			const pageHeight = doc.page.height;
+			const headerHeight = 50;
+			const footerHeight = 50;
+			const borderWidth = 8.5;
 
-			// VIBGYOR colors array (in order: Violet, Indigo, Blue, Green, Yellow, Orange, Red)
+			// VIBGYOR colors array
 			const vibgyorColors = [
 				"#8F00FF", // Violet
 				"#4B0082", // Indigo
@@ -95,53 +93,60 @@ app.post("/generate-pdf", (req, res) => {
 				"#FF0000", // Red
 			];
 
-			// Determine color index based on pageNum (cycles through VIBGYOR)
-			const colorIndex = (pageNum - 1) % vibgyorColors.length; // -1 since pageNum starts at 1
+			// Determine color index
+			const colorIndex = (pageNum - 1) % vibgyorColors.length;
 			const currentColor = vibgyorColors[colorIndex];
 
 			// Header with VIBGYOR color
 			doc.rect(0, 0, pageWidth, headerHeight).fill(currentColor);
+
+			// Add image in the left corner of the header
+			const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg"; // Use correct Windows path
+			doc.image(imagePath, 13, 10, {
+				width: 40,
+				height: 35,
+			});
+
+			// Header text
 			doc
 				.fontSize(22)
 				.fillColor("white")
-				.text(headerText, 10, 20, { align: "center", width: pageWidth - 20 });
+				.text(headerText, 50, 20, { align: "center", width: pageWidth - 60 });
 
-			// Footer with the same VIBGYOR color
+			// Footer with VIBGYOR color
 			const footerY = pageHeight - footerHeight;
 			doc.rect(0, footerY, pageWidth, footerHeight).fill(currentColor);
 
-			// Center name (positioned at center, adjusted to not overlap circle)
+			// Center name
 			doc
 				.fontSize(15)
-				.fillColor("white") // Changed to white for better contrast on VIBGYOR
+				.fillColor("white")
 				.text(`${centerName}`, 10, footerY + 15, {
 					align: "center",
-					width: pageWidth - 60, // Reduced width to leave space for circle
+					width: pageWidth - 60,
 				});
 
 			// Circle and page number at right corner
 			const circleRadius = 14;
-			const circleX = pageWidth - circleRadius - 16; // 16 points from right edge
-			const circleY = footerY + footerHeight / 2.3; // Vertically centered in footer
+			const circleX = pageWidth - circleRadius - 16;
+			const circleY = footerY + footerHeight / 2.3;
 
-			// Draw orange circle (keeping it orange as per your previous request)
 			doc
-				.fillColor("#FFA500") // Orange fill for circle
+				.fillColor("#FFA500")
 				.lineWidth(0.5)
-				.strokeColor("black") // Black border
+				.strokeColor("black")
 				.circle(circleX, circleY, circleRadius)
 				.fillAndStroke();
 
-			// Add page number centered in the circle
 			doc
 				.fontSize(12)
 				.fillColor("black")
 				.text(`${pageNum}`, circleX - circleRadius, circleY - 6, {
-					width: circleRadius * 1.8, // Matches circle diameter
-					align: "center", // Centers text horizontally
+					width: circleRadius * 1.8,
+					align: "center",
 				});
 
-			// Page border (unchanged)
+			// Page border
 			doc
 				.lineWidth(borderWidth)
 				.strokeColor("yellow")
@@ -153,6 +158,7 @@ app.post("/generate-pdf", (req, res) => {
 				)
 				.stroke();
 		};
+
 		const generateTable = (doc, data, x, y, columnWidths, rowHeight) => {
 			for (let i = 0; i < data.length; i++) {
 				let rowY = y + i * rowHeight;
@@ -160,13 +166,11 @@ app.post("/generate-pdf", (req, res) => {
 				for (let j = 0; j < data[i].length; j++) {
 					let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
 					doc.lineWidth(0.5);
-					// ✅ Your original table border settings
 					doc
 						.rect(cellX, rowY, columnWidths[j], rowHeight)
 						.strokeColor("black")
 						.stroke();
 
-					// Add text inside the cell
 					doc.fontSize(10).text(data[i][j], cellX + 8, rowY + 8, {
 						width: columnWidths[j] - 10,
 						align: "left",
@@ -190,7 +194,6 @@ app.post("/generate-pdf", (req, res) => {
 			.map((d) => [d.title]);
 		const rightTableData = allData.slice(1).map((d) => [d.title]);
 
-		// ✅ Uses the correct table border settings
 		generateTable(
 			doc,
 			leftTableData,
@@ -208,7 +211,7 @@ app.post("/generate-pdf", (req, res) => {
 			rowHeight
 		);
 
-		// ✅ Generate individual pages for each entry
+		// Generate individual pages
 		for (const { header, title, content } of allData) {
 			doc.addPage();
 			addPageDecorations(pageCounter++, header);
