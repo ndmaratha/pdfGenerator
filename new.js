@@ -9,18 +9,86 @@ app.use(cors());
 
 const allData = [
 	{
-		name: "Nayan",
-		header: "Page 6",
-		title: "Page 1 Title",
-		content: "Table of Content",
+	  name: "Nayan",
+	  header: "Table of Contents",
+	  title: "Table of Contents",
+	  content: "A structured overview of key topics covered in this document.",
 	},
 	{
-		name: "SomeOne",
-		header: "Table of Content2",
-		title: "The 21st-Century Student - Navigating the Academic Maze",
-		content: "Content goes here...",
+	  name: "SomeOne",
+	  header: "Understanding Human Traits and Talent Development",
+	  title: "Understanding Human Traits and Talent Development",
+	  content:
+		"Human nature and individual traits are deeply rooted in our biology, particularly in genetics and neuroscience. Traits such as creativity, bravery, sensitivity, and impulsiveness are often influenced by innate biology. The concept of 'innate traits' is closely linked with genetic influences, as 'innate' and 'genetic' are frequently used interchangeably. But how is human nature encoded in the human genome?\n\n" +
+		"The human genome acts as a blueprint, shaping typical human characteristics while allowing individual variations due to differences in genetic coding. Just as genetics determine an average height, variations in genetic programs result in diverse human traits and abilities.",
 	},
-];
+	{
+	  name: "SomeOne",
+	  header: "Francoys Gagné’s Differentiated Model of Giftedness and Talent",
+	  title: "Francoys Gagné’s Differentiated Model of Giftedness and Talent (DMGT)",
+	  content:
+		"Francoys Gagné’s model differentiates between 'gifts' (natural abilities) and 'talents' (skills systematically developed from these natural abilities). According to Gagné, talents emerge through structured learning processes influenced by both internal and external catalysts.\n\n" +
+		"**1. Natural Abilities (Gifts):**\n" +
+		"   - **Intellectual Abilities:** Reasoning, memory, observation, judgment, and metacognition.\n" +
+		"   - **Creative Abilities:** Inventiveness, imagination, originality, and fluency.\n" +
+		"   - **Socio-affective Abilities:** Perceptiveness, empathy, tact, and influence.\n" +
+		"   - **Sensorimotor Abilities:** Sensory sensitivity, strength, endurance, and coordination.\n\n" +
+		"**2. Talents:**\n" +
+		"   Talents are developed in various domains, such as:\n" +
+		"   - Academics\n" +
+		"   - Arts\n" +
+		"   - Business\n" +
+		"   - Leisure\n" +
+		"   - Social Affection\n" +
+		"   - Sports\n" +
+		"   - Technology",
+	},
+	{
+	  name: "SomeOne",
+	  header: "Talent Development Processes",
+	  title: "Talent Development Processes",
+	  content:
+		"**3. Developmental Processes:**\n" +
+		"   - Natural abilities do not automatically become talents; they require structured learning.\n" +
+		"   - **Informal Learning:** Example – A child learning their first language.\n" +
+		"   - **Formal Learning:** Example – Structured academic education.\n\n" +
+		"**4. Intrapersonal Catalysts:**\n" +
+		"   These are personal factors that influence learning, including:\n" +
+		"   - **Physical Characteristics:** Health and physical endurance.\n" +
+		"   - **Motivation & Volition:** The drive to learn and grow.\n" +
+		"   - **Self-Management:** Discipline, time management, and adaptability.\n" +
+		"   - **Personality:** Traits such as self-esteem, resilience, and flexibility.\n\n" +
+		"**5. Environmental Catalysts:**\n" +
+		"   External factors play a major role in shaping talent. These include:\n" +
+		"   - **Milieu:** Cultural and familial influences.\n" +
+		"   - **Persons:** Mentors, teachers, and role models.\n" +
+		"   - **Provisions:** Access to structured programs, activities, and services.\n" +
+		"   - **Events:** Life experiences that shape an individual's abilities and skills.",
+	},
+	{
+	  name: "SomeOne",
+	  header: "The Role of Chance in Talent Development",
+	  title: "The Role of Chance in Talent Development",
+	  content:
+		"**6. Chance:**\n" +
+		"   - Chance influences both natural abilities and environmental factors.\n" +
+		"   - Random genetic recombination affects the type and extent of giftedness a child inherits.\n" +
+		"   - Unexpected opportunities or events shape how talents develop over time.\n\n" +
+		"**Key Takeaways:**\n" +
+		"   - **Innate Traits and Genetics:**\n" +
+		"     - Traits like creativity, bravery, and sensitivity have a biological basis rooted in genetics.\n" +
+		"     - The human genome provides a blueprint, but individual variations arise naturally.\n" +
+		"   - **Gifts vs. Talents:**\n" +
+		"     - Gifts are natural abilities, while talents require learning and practice.\n" +
+		"     - Internal (motivation, personality) and external (environment, opportunities) factors influence talent development.\n" +
+		"   - **Role of Chance:**\n" +
+		"     - Chance plays a major role in shaping both natural abilities and environmental influences.\n" +
+		"   - **Holistic Development:**\n" +
+		"     - Developing talents requires a balance of natural abilities, structured learning, and a supportive environment.\n\n" +
+		"By understanding the interplay between genetics, innate abilities, and environmental influences, we can better appreciate the complexity of human nature and the pathways to developing individual talents.",
+	},
+  ];
+  
 
 app.post("/generate-pdf", (req, res) => {
 	try {
@@ -45,10 +113,9 @@ app.post("/generate-pdf", (req, res) => {
 		res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 		doc.pipe(res);
 
-		// ✅ ADD FIRST PAGE BEFORE ACCESSING doc.page.width
+		// Add first page
 		doc.addPage();
 
-		// Now, `doc.page` is defined
 		const pageWidth = doc.page.width;
 		const pageHeight = doc.page.height;
 
@@ -58,56 +125,80 @@ app.post("/generate-pdf", (req, res) => {
 		const footerHeight = mmToPt(12);
 
 		const addPageDecorations = (pageNum, headerText) => {
-			// Assuming these variables are defined elsewhere in your code
-			const pageWidth = doc.page.width; // Default A4: 595.28
-			const pageHeight = doc.page.height; // Default A4: 841.89
-			const headerHeight = 50; // Adjust as needed
-			const footerHeight = 50; // Adjust as needed
-			const borderWidth = 8.5; // ~3mm in points (1mm ≈ 2.83 points)
+			// Page dimensions
+			const pageWidth = doc.page.width;
+			const pageHeight = doc.page.height;
+			const headerHeight = 50;
+			const footerHeight = 50;
+			const borderWidth = 8.5;
 
-			// Header (unchanged)
-			doc.rect(0, 0, pageWidth, headerHeight).fill("#FF0000");
+			// VIBGYOR colors array
+			const vibgyorColors = [
+				"#8F00FF", // Violet
+				"#4B0082", // Indigo
+				"#0000FF", // Blue
+				"#00FF00", // Green
+				"#FFFF00", // Yellow
+				"#FFA500", // Orange
+				"#FF0000", // Red
+			];
+
+			// Determine color index
+			const colorIndex = (pageNum - 1) % vibgyorColors.length;
+			const currentColor = vibgyorColors[colorIndex];
+
+			// Header with VIBGYOR color
+			doc.rect(0, 0, pageWidth, headerHeight).fill(currentColor);
+
+			// Add image in the left corner of the header
+			//const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg"; // Nayan
+			const imagePath = "C:\\Users\\manoj\\Desktop\\Mumbai\\pdfGenerator\\images\\logo2.jpg";// Manoj
+
+			doc.image(imagePath, 13, 10, {
+				width: 40,
+				height: 35,
+			});
+
+			// Header text
 			doc
 				.fontSize(22)
 				.fillColor("white")
-				.text(headerText, 10, 20, { align: "center", width: pageWidth - 20 });
+				.text(headerText, 50, 20, { align: "center", width: pageWidth - 60 });
 
-			// Footer
+			// Footer with VIBGYOR color
 			const footerY = pageHeight - footerHeight;
-			doc.rect(0, footerY, pageWidth, footerHeight).fill("#FF0000");
+			doc.rect(0, footerY, pageWidth, footerHeight).fill(currentColor);
 
-			// Center name (positioned at left or center, adjusted to not overlap circle)
+			// Center name
 			doc
 				.fontSize(15)
 				.fillColor("white")
 				.text(`${centerName}`, 10, footerY + 15, {
-					align: "center", // Changed to left to avoid overlap
-					width: pageWidth - 60, // Reduced width to leave space for circle
+					align: "center",
+					width: pageWidth - 60,
 				});
 
 			// Circle and page number at right corner
 			const circleRadius = 14;
-			const circleX = pageWidth - circleRadius - 16; // 10 points from right edge
-			const circleY = footerY + footerHeight / 2.3; // Vertically centered in footer
+			const circleX = pageWidth - circleRadius - 16;
+			const circleY = footerY + footerHeight / 2.3;
 
-			// Draw orange circle
 			doc
 				.fillColor("#FFA500")
 				.lineWidth(0.5)
-				.strokeColor("black") // Orange border to match footer
+				.strokeColor("black")
 				.circle(circleX, circleY, circleRadius)
 				.fillAndStroke();
 
-			// Add page number centered in the circle
 			doc
 				.fontSize(12)
 				.fillColor("black")
 				.text(`${pageNum}`, circleX - circleRadius, circleY - 6, {
-					width: circleRadius * 1.8, // Matches circle diameter
-					align: "center", // Centers text horizontally
+					width: circleRadius * 1.8,
+					align: "center",
 				});
 
-			// Page border (unchanged)
+			// Page border
 			doc
 				.lineWidth(borderWidth)
 				.strokeColor("yellow")
@@ -119,6 +210,7 @@ app.post("/generate-pdf", (req, res) => {
 				)
 				.stroke();
 		};
+
 		const generateTable = (doc, data, x, y, columnWidths, rowHeight) => {
 			for (let i = 0; i < data.length; i++) {
 				let rowY = y + i * rowHeight;
@@ -126,13 +218,11 @@ app.post("/generate-pdf", (req, res) => {
 				for (let j = 0; j < data[i].length; j++) {
 					let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
 					doc.lineWidth(0.5);
-					// ✅ Your original table border settings
 					doc
 						.rect(cellX, rowY, columnWidths[j], rowHeight)
 						.strokeColor("black")
 						.stroke();
 
-					// Add text inside the cell
 					doc.fontSize(10).text(data[i][j], cellX + 8, rowY + 8, {
 						width: columnWidths[j] - 10,
 						align: "left",
@@ -156,7 +246,6 @@ app.post("/generate-pdf", (req, res) => {
 			.map((d) => [d.title]);
 		const rightTableData = allData.slice(1).map((d) => [d.title]);
 
-		// ✅ Uses the correct table border settings
 		generateTable(
 			doc,
 			leftTableData,
@@ -174,13 +263,40 @@ app.post("/generate-pdf", (req, res) => {
 			rowHeight
 		);
 
-		// ✅ Generate individual pages for each entry
+		// // Generate individual pages
+		// for (const { header, title, content } of allData) {
+		// 	doc.addPage();
+		// 	addPageDecorations(pageCounter++, header);
+
+		// 	doc.fontSize(18).fillColor("black").text(title, 50, 100);
+		// 	doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
+		// }
+		// Individual pages with content and conditional image
 		for (const { header, title, content } of allData) {
 			doc.addPage();
 			addPageDecorations(pageCounter++, header);
 
+			// Add content
 			doc.fontSize(18).fillColor("black").text(title, 50, 100);
 			doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
+
+			// Calculate content height and available space
+			const contentBottom = doc.y; // Current y-position after adding content
+			const availableHeight = pageHeight - headerHeight - footerHeight; // ~737 points
+			const contentHeight = contentBottom - headerHeight; // Height used by content
+
+			// Check if content uses less than half the available space
+			if (contentHeight < availableHeight / 2) {
+				// Add image in remaining space
+				//const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg"; //Nayan
+				const imagePath = "C:\\Users\\manoj\\Desktop\\Mumbai\\pdfGenerator\\images\\logo2.jpg"; //Manoj
+				const imageX = (pageWidth - 200) / 2; // Center horizontally (image width = 200)
+				const imageY = contentBottom + 20; // 20 points below content
+				doc.image(imagePath, imageX, imageY, {
+					width: 200, // Larger image for remaining space
+					height: 200,
+				});
+			}
 		}
 
 		doc.end();
@@ -195,4 +311,4 @@ app.post("/generate-pdf", (req, res) => {
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
-});
+});//hhh
