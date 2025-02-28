@@ -10,13 +10,31 @@ app.use(cors());
 const allData = [
 	{
 		name: "Nayan",
-		header: "Page 6",
+		header: "Header",
 		title: "Page 1 Title",
 		content: "Table of Content",
 	},
 	{
 		name: "SomeOne",
-		header: "Table of Content2",
+		header: "Header 1",
+		title: "The 21st-Century Student - Navigating the Academic Maze",
+		content: "Content goes here...",
+	},
+	{
+		name: "SomeOne",
+		header: "Header 3",
+		title: "The 21st-Century Student - Navigating the Academic Maze",
+		content: "Content goes here...",
+	},
+	{
+		name: "SomeOne",
+		header: "Header 4",
+		title: "The 21st-Century Student - Navigating the Academic Maze",
+		content: "Content goes here...",
+	},
+	{
+		name: "SomeOne",
+		header: "Header 5",
 		title: "The 21st-Century Student - Navigating the Academic Maze",
 		content: "Content goes here...",
 	},
@@ -64,37 +82,53 @@ app.post("/generate-pdf", (req, res) => {
 			const headerHeight = 50; // Adjust as needed
 			const footerHeight = 50; // Adjust as needed
 			const borderWidth = 8.5; // ~3mm in points (1mm ≈ 2.83 points)
+			const centerName = "Your Center"; // Define centerName if not already defined
 
-			// Header (unchanged)
-			doc.rect(0, 0, pageWidth, headerHeight).fill("#FF0000");
+			// VIBGYOR colors array (in order: Violet, Indigo, Blue, Green, Yellow, Orange, Red)
+			const vibgyorColors = [
+				"#8F00FF", // Violet
+				"#4B0082", // Indigo
+				"#0000FF", // Blue
+				"#00FF00", // Green
+				"#FFFF00", // Yellow
+				"#FFA500", // Orange
+				"#FF0000", // Red
+			];
+
+			// Determine color index based on pageNum (cycles through VIBGYOR)
+			const colorIndex = (pageNum - 1) % vibgyorColors.length; // -1 since pageNum starts at 1
+			const currentColor = vibgyorColors[colorIndex];
+
+			// Header with VIBGYOR color
+			doc.rect(0, 0, pageWidth, headerHeight).fill(currentColor);
 			doc
 				.fontSize(22)
 				.fillColor("white")
 				.text(headerText, 10, 20, { align: "center", width: pageWidth - 20 });
 
-			// Footer
+			// Footer with the same VIBGYOR color
 			const footerY = pageHeight - footerHeight;
-			doc.rect(0, footerY, pageWidth, footerHeight).fill("#FF0000");
+			doc.rect(0, footerY, pageWidth, footerHeight).fill(currentColor);
 
-			// Center name (positioned at left or center, adjusted to not overlap circle)
+			// Center name (positioned at center, adjusted to not overlap circle)
 			doc
 				.fontSize(15)
-				.fillColor("white")
+				.fillColor("white") // Changed to white for better contrast on VIBGYOR
 				.text(`${centerName}`, 10, footerY + 15, {
-					align: "center", // Changed to left to avoid overlap
+					align: "center",
 					width: pageWidth - 60, // Reduced width to leave space for circle
 				});
 
 			// Circle and page number at right corner
 			const circleRadius = 14;
-			const circleX = pageWidth - circleRadius - 16; // 10 points from right edge
+			const circleX = pageWidth - circleRadius - 16; // 16 points from right edge
 			const circleY = footerY + footerHeight / 2.3; // Vertically centered in footer
 
-			// Draw orange circle
+			// Draw orange circle (keeping it orange as per your previous request)
 			doc
-				.fillColor("#FFA500")
+				.fillColor("#FFA500") // Orange fill for circle
 				.lineWidth(0.5)
-				.strokeColor("black") // Orange border to match footer
+				.strokeColor("black") // Black border
 				.circle(circleX, circleY, circleRadius)
 				.fillAndStroke();
 
