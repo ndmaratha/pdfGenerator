@@ -9,18 +9,86 @@ app.use(cors());
 
 const allData = [
 	{
-		name: "Nayan",
-		header: "Page 6",
-		title: "Page 1 Title",
-		content: "Table of Content",
+	  name: "Nayan",
+	  header: "Table of Contents",
+	  title: "Table of Contents",
+	  content: "A structured overview of key topics covered in this document.",
 	},
 	{
-		name: "SomeOne",
-		header: "Table of Content2",
-		title: "The 21st-Century Student - Navigating the Academic Maze",
-		content: "Content goes here...",
+	  name: "SomeOne",
+	  header: "Understanding Human Traits and Talent Development",
+	  title: "Understanding Human Traits and Talent Development",
+	  content:
+		"Human nature and individual traits are deeply rooted in our biology, particularly in genetics and neuroscience. Traits such as creativity, bravery, sensitivity, and impulsiveness are often influenced by innate biology. The concept of 'innate traits' is closely linked with genetic influences, as 'innate' and 'genetic' are frequently used interchangeably. But how is human nature encoded in the human genome?\n\n" +
+		"The human genome acts as a blueprint, shaping typical human characteristics while allowing individual variations due to differences in genetic coding. Just as genetics determine an average height, variations in genetic programs result in diverse human traits and abilities.",
 	},
-];
+	{
+	  name: "SomeOne",
+	  header: "Francoys Gagné’s Differentiated Model of Giftedness and Talent",
+	  title: "Francoys Gagné’s Differentiated Model of Giftedness and Talent (DMGT)",
+	  content:
+		"Francoys Gagné’s model differentiates between 'gifts' (natural abilities) and 'talents' (skills systematically developed from these natural abilities). According to Gagné, talents emerge through structured learning processes influenced by both internal and external catalysts.\n\n" +
+		"**1. Natural Abilities (Gifts):**\n" +
+		"   - **Intellectual Abilities:** Reasoning, memory, observation, judgment, and metacognition.\n" +
+		"   - **Creative Abilities:** Inventiveness, imagination, originality, and fluency.\n" +
+		"   - **Socio-affective Abilities:** Perceptiveness, empathy, tact, and influence.\n" +
+		"   - **Sensorimotor Abilities:** Sensory sensitivity, strength, endurance, and coordination.\n\n" +
+		"**2. Talents:**\n" +
+		"   Talents are developed in various domains, such as:\n" +
+		"   - Academics\n" +
+		"   - Arts\n" +
+		"   - Business\n" +
+		"   - Leisure\n" +
+		"   - Social Affection\n" +
+		"   - Sports\n" +
+		"   - Technology",
+	},
+	{
+	  name: "SomeOne",
+	  header: "Talent Development Processes",
+	  title: "Talent Development Processes",
+	  content:
+		"**3. Developmental Processes:**\n" +
+		"   - Natural abilities do not automatically become talents; they require structured learning.\n" +
+		"   - **Informal Learning:** Example – A child learning their first language.\n" +
+		"   - **Formal Learning:** Example – Structured academic education.\n\n" +
+		"**4. Intrapersonal Catalysts:**\n" +
+		"   These are personal factors that influence learning, including:\n" +
+		"   - **Physical Characteristics:** Health and physical endurance.\n" +
+		"   - **Motivation & Volition:** The drive to learn and grow.\n" +
+		"   - **Self-Management:** Discipline, time management, and adaptability.\n" +
+		"   - **Personality:** Traits such as self-esteem, resilience, and flexibility.\n\n" +
+		"**5. Environmental Catalysts:**\n" +
+		"   External factors play a major role in shaping talent. These include:\n" +
+		"   - **Milieu:** Cultural and familial influences.\n" +
+		"   - **Persons:** Mentors, teachers, and role models.\n" +
+		"   - **Provisions:** Access to structured programs, activities, and services.\n" +
+		"   - **Events:** Life experiences that shape an individual's abilities and skills.",
+	},
+	{
+	  name: "SomeOne",
+	  header: "The Role of Chance in Talent Development",
+	  title: "The Role of Chance in Talent Development",
+	  content:
+		"**6. Chance:**\n" +
+		"   - Chance influences both natural abilities and environmental factors.\n" +
+		"   - Random genetic recombination affects the type and extent of giftedness a child inherits.\n" +
+		"   - Unexpected opportunities or events shape how talents develop over time.\n\n" +
+		"**Key Takeaways:**\n" +
+		"   - **Innate Traits and Genetics:**\n" +
+		"     - Traits like creativity, bravery, and sensitivity have a biological basis rooted in genetics.\n" +
+		"     - The human genome provides a blueprint, but individual variations arise naturally.\n" +
+		"   - **Gifts vs. Talents:**\n" +
+		"     - Gifts are natural abilities, while talents require learning and practice.\n" +
+		"     - Internal (motivation, personality) and external (environment, opportunities) factors influence talent development.\n" +
+		"   - **Role of Chance:**\n" +
+		"     - Chance plays a major role in shaping both natural abilities and environmental influences.\n" +
+		"   - **Holistic Development:**\n" +
+		"     - Developing talents requires a balance of natural abilities, structured learning, and a supportive environment.\n\n" +
+		"By understanding the interplay between genetics, innate abilities, and environmental influences, we can better appreciate the complexity of human nature and the pathways to developing individual talents.",
+	},
+  ];
+  
 
 app.post("/generate-pdf", (req, res) => {
 	try {
