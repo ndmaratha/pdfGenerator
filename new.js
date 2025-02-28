@@ -211,13 +211,39 @@ app.post("/generate-pdf", (req, res) => {
 			rowHeight
 		);
 
-		// Generate individual pages
+		// // Generate individual pages
+		// for (const { header, title, content } of allData) {
+		// 	doc.addPage();
+		// 	addPageDecorations(pageCounter++, header);
+
+		// 	doc.fontSize(18).fillColor("black").text(title, 50, 100);
+		// 	doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
+		// }
+		// Individual pages with content and conditional image
 		for (const { header, title, content } of allData) {
 			doc.addPage();
 			addPageDecorations(pageCounter++, header);
 
+			// Add content
 			doc.fontSize(18).fillColor("black").text(title, 50, 100);
 			doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
+
+			// Calculate content height and available space
+			const contentBottom = doc.y; // Current y-position after adding content
+			const availableHeight = pageHeight - headerHeight - footerHeight; // ~737 points
+			const contentHeight = contentBottom - headerHeight; // Height used by content
+
+			// Check if content uses less than half the available space
+			if (contentHeight < availableHeight / 2) {
+				// Add image in remaining space
+				const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg";
+				const imageX = (pageWidth - 200) / 2; // Center horizontally (image width = 200)
+				const imageY = contentBottom + 20; // 20 points below content
+				doc.image(imagePath, imageX, imageY, {
+					width: 200, // Larger image for remaining space
+					height: 200,
+				});
+			}
 		}
 
 		doc.end();
