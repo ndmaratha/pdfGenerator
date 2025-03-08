@@ -1,334 +1,433 @@
 const express = require("express");
-const PDFDocument = require("pdfkit");
+const { PDFDocument, rgb } = require("pdf-lib");
 const cors = require("cors");
+const fs = require("fs").promises;
+const path = require("path");
+const allData = require("./data.js");
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 app.use(cors());
 
-const allData = [
-	{
-		name: "Nayan",
-		header: "Table of Contents",
-		title: "Table of Contents",
-		content: "A structured overview of key topics covered in this document.",
-	},
-	{
-		name: "SomeOne",
-		header: "Understanding Human Traits and Talent Development",
-		title: "Understanding Human Traits and Talent Development",
-		content:
-			"Human nature and individual traits are deeply rooted in our biology, particularly in genetics and neuroscience. Traits such as creativity, bravery, sensitivity, and impulsiveness are often influenced by innate biology. The concept of 'innate traits' is closely linked with genetic influences, as 'innate' and 'genetic' are frequently used interchangeably. But how is human nature encoded in the human genome?\n\n" +
-			"The human genome acts as a blueprint, shaping typical human characteristics while allowing individual variations due to differences in genetic coding. Just as genetics determine an average height, variations in genetic programs result in diverse human traits and abilities.",
-	},
-	{
-		name: "SomeOne",
-		header: "Francoys Gagné’s Differentiated Model of Giftedness and Talent",
-		title:
-			"Francoys Gagné’s Differentiated Model of Giftedness and Talent (DMGT)",
-		content:
-			"Francoys Gagné’s model differentiates between 'gifts' (natural abilities) and 'talents' (skills systematically developed from these natural abilities). According to Gagné, talents emerge through structured learning processes influenced by both internal and external catalysts.\n\n" +
-			"**1. Natural Abilities (Gifts):**\n" +
-			"   - **Intellectual Abilities:** Reasoning, memory, observation, judgment, and metacognition.\n" +
-			"   - **Creative Abilities:** Inventiveness, imagination, originality, and fluency.\n" +
-			"   - **Socio-affective Abilities:** Perceptiveness, empathy, tact, and influence.\n" +
-			"   - **Sensorimotor Abilities:** Sensory sensitivity, strength, endurance, and coordination.\n\n" +
-			"**2. Talents:**\n" +
-			"   Talents are developed in various domains, such as:\n" +
-			"   - Academics\n" +
-			"   - Arts\n" +
-			"   - Business\n" +
-			"   - Leisure\n" +
-			"   - Social Affection\n" +
-			"   - Sports\n" +
-			"   - Technology",
-	},
-	{
-		name: "SomeOne",
-		header: "Talent Development Processes",
-		title: "Talent Development Processes",
-		content:
-			"**3. Developmental Processes:**\n" +
-			"   - Natural abilities do not automatically become talents; they require structured learning.\n" +
-			"   - **Informal Learning:** Example – A child learning their first language.\n" +
-			"   - **Formal Learning:** Example – Structured academic education.\n\n" +
-			"**4. Intrapersonal Catalysts:**\n" +
-			"   These are personal factors that influence learning, including:\n" +
-			"   - **Physical Characteristics:** Health and physical endurance.\n" +
-			"   - **Motivation & Volition:** The drive to learn and grow.\n" +
-			"   - **Self-Management:** Discipline, time management, and adaptability.\n" +
-			"   - **Personality:** Traits such as self-esteem, resilience, and flexibility.\n\n" +
-			"**5. Environmental Catalysts:**\n" +
-			"   External factors play a major role in shaping talent. These include:\n" +
-			"   - **Milieu:** Cultural and familial influences.\n" +
-			"   - **Persons:** Mentors, teachers, and role models.\n" +
-			"   - **Provisions:** Access to structured programs, activities, and services.\n" +
-			"   - **Events:** Life experiences that shape an individual's abilities and skills.",
-	},
-	{
-		name: "SomeOne",
-		header: "The Role of Chance in Talent Development",
-		title: "The Role of Chance in Talent Development",
-		content:
-			"**6. Chance:**\n" +
-			"   - Chance influences both natural abilities and environmental factors.\n" +
-			"   - Random genetic recombination affects the type and extent of giftedness a child inherits.\n" +
-			"   - Unexpected opportunities or events shape how talents develop over time.\n\n" +
-			"**Key Takeaways:**\n" +
-			"   - **Innate Traits and Genetics:**\n" +
-			"     - Traits like creativity, bravery, and sensitivity have a biological basis rooted in genetics.\n" +
-			"     - The human genome provides a blueprint, but individual variations arise naturally.\n" +
-			"   - **Gifts vs. Talents:**\n" +
-			"     - Gifts are natural abilities, while talents require learning and practice.\n" +
-			"     - Internal (motivation, personality) and external (environment, opportunities) factors influence talent development.\n" +
-			"   - **Role of Chance:**\n" +
-			"     - Chance plays a major role in shaping both natural abilities and environmental influences.\n" +
-			"   - **Holistic Development:**\n" +
-			"     - Developing talents requires a balance of natural abilities, structured learning, and a supportive environment.\n\n" +
-			"By understanding the interplay between genetics, innate abilities, and environmental influences, we can better appreciate the complexity of human nature and the pathways to developing individual talents.",
-	},
-];
-
-app.post("/generate-pdf", (req, res) => {
+app.post("/generate-pdf", async (req, res) => {
 	try {
 		const { centerName } = req.body;
 		if (!centerName) {
-			return res
-				.status(400)
-				.json({ error: "Missing required field: centerName" });
+			throw new Error("Missing required field: centerName");
 		}
 
 		const sanitizedCenterName = centerName.replace(/[^a-zA-Z0-9]/g, "_");
 		const filename = `${sanitizedCenterName}_Associate_Center.pdf`;
 
-		const doc = new PDFDocument({
-			size: "A4",
-			margins: { top: 25, bottom: 12, left: 10, right: 10 },
-			info: { Title: `${centerName} Associate Center Report` },
-			autoFirstPage: false,
-		});
+		const doc = await PDFDocument.create();
+		const pageWidth = 595.28;
+		const pageHeight = 841.89;
+		const helveticaFont = await doc.embedFont("Helvetica");
 
-		res.setHeader("Content-Type", "application/pdf");
-		res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-		doc.pipe(res);
+		const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg";
+		const vibgyorColors = [
+			rgb(0.56, 0, 1),
+			rgb(0.29, 0, 0.51),
+			rgb(0, 0, 1),
+			rgb(0, 1, 0),
+			rgb(1, 1, 0),
+			rgb(1, 0.65, 0),
+			rgb(1, 0, 0),
+		];
 
-		// Add first page
-		doc.addPage();
+		const sanitizeText = (text) => {
+			return (text || "").replace(/[^\x00-\xFF\n]/g, "?");
+		};
 
-		const pageWidth = doc.page.width;
-		const pageHeight = doc.page.height;
-
-		const mmToPt = (mm) => mm * 2.83465;
-		const borderWidth = mmToPt(3);
-		const headerHeight = mmToPt(25);
-		const footerHeight = mmToPt(12);
-
-		const addPageDecorations = (pageNum, headerText) => {
-			// Page dimensions
-			const pageWidth = doc.page.width;
-			const pageHeight = doc.page.height;
-			const headerHeight = 50;
-			const footerHeight = 50;
-			const borderWidth = 8.5;
-
-			// VIBGYOR colors array
-			const vibgyorColors = [
-				"#8F00FF", // Violet
-				"#4B0082", // Indigo
-				"#0000FF", // Blue
-				"#00FF00", // Green
-				"#FFFF00", // Yellow
-				"#FFA500", // Orange
-				"#FF0000", // Red
-			];
-
-			// Determine color index
+		const addPageDecorations = async (page, pageNum, headerText) => {
 			const colorIndex = (pageNum - 1) % vibgyorColors.length;
 			const currentColor = vibgyorColors[colorIndex];
 
-			// Header with VIBGYOR color
-			doc.rect(0, 0, pageWidth, headerHeight).fill(currentColor);
-
-			// Add image in the left corner of the header
-			const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg"; // Nayan
-			//const imagePath = "C:\\Users\\manoj\\Desktop\\Mumbai\\pdfGenerator\\images\\logo2.jpg";// Manoj
-
-			doc.image(imagePath, 13, 10, {
-				width: 40,
-				height: 35,
+			page.drawRectangle({
+				x: 0,
+				y: pageHeight - 50,
+				width: pageWidth,
+				height: 50,
+				color: currentColor,
+			});
+			const imageBytes = await fs.readFile(imagePath).catch(() => null);
+			if (imageBytes) {
+				const image = await doc.embedJpg(imageBytes);
+				page.drawImage(image, {
+					x: 13,
+					y: pageHeight - 45,
+					width: 40,
+					height: 35,
+				});
+			}
+			page.drawText(sanitizeText(headerText), {
+				x: 210,
+				y: pageHeight - 35,
+				size: 22,
+				font: helveticaFont,
+				color: rgb(1, 1, 1),
+				maxWidth: pageWidth - 60,
 			});
 
-			// Header text
-			doc
-				.fontSize(20)
-				.fillColor("white")
-				.text(headerText, 50, 20, { align: "center", width: pageWidth - 60 });
+			page.drawRectangle({
+				x: 0,
+				y: 0,
+				width: pageWidth,
+				height: 50,
+				color: currentColor,
+			});
+			page.drawText(sanitizeText(centerName), {
+				x: 210,
+				y: 25,
+				size: 15,
+				font: helveticaFont,
+				color: rgb(1, 1, 1),
+				maxWidth: pageWidth - 60,
+			});
 
-			// Footer with VIBGYOR color
-			const footerY = pageHeight - footerHeight;
-			doc.rect(0, footerY, pageWidth, footerHeight).fill(currentColor);
-
-			// Center name
-			doc
-				.fontSize(15)
-				.fillColor("white")
-				.text(`${centerName}`, 10, footerY + 15, {
-					align: "center",
-					width: pageWidth - 60,
-				});
-
-			// Circle and page number at right corner
 			const circleRadius = 14;
 			const circleX = pageWidth - circleRadius - 16;
-			const circleY = footerY + footerHeight / 2.3;
+			page.drawCircle({
+				x: circleX,
+				y: 25,
+				size: circleRadius,
+				color: rgb(1, 0.65, 0),
+				borderColor: rgb(0, 0, 0),
+				borderWidth: 0.5,
+			});
+			page.drawText(`${pageNum}`, {
+				x: circleX - circleRadius + 9,
+				y: 19,
+				size: 12,
+				font: helveticaFont,
+				color: rgb(0, 0, 0),
+			});
 
-			doc
-				.fillColor("#FFA500")
-				.lineWidth(0.5)
-				.strokeColor("black")
-				.circle(circleX, circleY, circleRadius)
-				.fillAndStroke();
-
-			doc
-				.fontSize(12)
-				.fillColor("black")
-				.text(`${pageNum}`, circleX - circleRadius, circleY - 6, {
-					width: circleRadius * 1.8,
-					align: "center",
-				});
-
-			// Page border
-			doc
-				.lineWidth(borderWidth)
-				.strokeColor("yellow")
-				.rect(
-					borderWidth / 2,
-					borderWidth / 2,
-					pageWidth - borderWidth,
-					pageHeight - borderWidth
-				)
-				.stroke();
+			page.drawRectangle({
+				x: 4.25,
+				y: 4.25,
+				width: pageWidth - 8.5,
+				height: pageHeight - 8.5,
+				borderColor: rgb(1, 1, 0),
+				borderWidth: 8.5,
+			});
 		};
-		const generateTable = (doc, data, x, y, columnWidths, rowHeight) => {
-			// Ensure columnWidths is defined and has correct length
-			if (!Array.isArray(columnWidths) || columnWidths.length !== 2) {
-				throw new Error(
-					"columnWidths must be an array with exactly 2 elements"
-				);
-			}
 
-			// Define table headers
+		const splitTextIntoLines = (text, maxWidth, font, size) => {
+			const cleanText = sanitizeText(text);
+			const paragraphs = cleanText.split("\n");
+			const lines = [];
+
+			for (let i = 0; i < paragraphs.length; i++) {
+				const paragraph = paragraphs[i].trim();
+				if (paragraph) {
+					const words = paragraph.split(" ");
+					let currentLine = "";
+					for (const word of words) {
+						const testLine = currentLine ? `${currentLine} ${word}` : word;
+						if (font.widthOfTextAtSize(testLine, size) < maxWidth) {
+							currentLine = testLine;
+						} else {
+							if (currentLine) lines.push(currentLine);
+							currentLine = word;
+						}
+					}
+					if (currentLine) lines.push(currentLine);
+				}
+				if (i < paragraphs.length - 1) {
+					lines.push(""); // Paragraph break marker
+				}
+			}
+			return lines;
+		};
+
+		const generateTable = (
+			page,
+			data,
+			x,
+			y,
+			columnWidths,
+			rowHeight,
+			isRightTable = false,
+			leftTableLength = 0
+		) => {
 			const headers = ["Content", "PageNo"];
+			let currentY = y;
 
-			// Draw header row
-			let rowY = y;
-			for (let j = 0; j < headers.length; j++) {
-				let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
-				doc.lineWidth(0.5);
-				doc
-					.rect(cellX, rowY, columnWidths[j], rowHeight)
-					.strokeColor("black")
-					.stroke();
-
-				doc.fontSize(10).text(headers[j], cellX + 8, rowY + 8, {
-					width: columnWidths[j] - 10,
-					align: "left",
+			headers.forEach((header, j) => {
+				const cellX = x + (j === 1 ? columnWidths[0] : 0);
+				page.drawRectangle({
+					x: cellX,
+					y: currentY,
+					width: columnWidths[j],
+					height: rowHeight,
+					borderColor: rgb(0, 0, 0),
+					borderWidth: 1,
 				});
-			}
+				page.drawText(header, {
+					x: cellX + 8,
+					y: currentY + 8,
+					size: 12,
+					font: helveticaFont,
+				});
+			});
 
-			// Draw data rows with content and incremental page numbers
-			for (let i = 0; i < data.length; i++) {
-				rowY = y + (i + 1) * rowHeight; // Start after header row
-				const rowData = [data[i].title, (i + 2).toString()]; // PageNo starts from 2
+			data.forEach((item, i) => {
+				currentY = y - (i + 1) * rowHeight;
+				const rowData = [sanitizeText(item.title), item.pageNumber];
+				rowData.forEach((text, j) => {
+					const cellX = x + (j === 1 ? columnWidths[0] : 0);
+					page.drawRectangle({
+						x: cellX,
+						y: currentY,
+						width: columnWidths[j],
+						height: rowHeight,
+						borderColor: rgb(0, 0, 0),
+						borderWidth: 1,
+					});
+					const lines = splitTextIntoLines(
+						text,
+						columnWidths[j] - 10,
+						helveticaFont,
+						12
+					);
+					page.drawText(lines[0] || "", {
+						x: cellX + 8,
+						y: currentY + 8,
+						size: 12,
+						font: helveticaFont,
+					});
+				});
+			});
 
-				for (let j = 0; j < rowData.length; j++) {
-					let cellX = x + columnWidths.slice(0, j).reduce((a, b) => a + b, 0);
-					doc.lineWidth(0.5);
-					doc
-						.rect(cellX, rowY, columnWidths[j], rowHeight)
-						.strokeColor("black")
-						.stroke();
-
-					doc.fontSize(10).text(rowData[j], cellX + 8, rowY + 8, {
-						width: columnWidths[j] - 10,
-						align: "left",
+			if (isRightTable && leftTableLength > data.length) {
+				const extraRows = leftTableLength - data.length;
+				for (let i = 0; i < extraRows; i++) {
+					currentY = y - (data.length + i + 1) * rowHeight;
+					columnWidths.forEach((width, j) => {
+						const cellX = x + (j === 1 ? columnWidths[0] : 0);
+						page.drawRectangle({
+							x: cellX,
+							y: currentY,
+							width,
+							height: rowHeight,
+							borderColor: rgb(0, 0, 0),
+							borderWidth: 1,
+						});
 					});
 				}
 			}
 		};
 
-		// In the app.post("/generate-pdf") route:
-		let pageCounter = 1;
-		addPageDecorations(pageCounter++, "Table of Contents");
+		const renderTextWithItalics = (
+			page,
+			text,
+			x,
+			y,
+			size,
+			font,
+			maxWidth,
+			color
+		) => {
+			const parts = text.split(/(\*[^*]+\*)/);
+			let currentX = x;
+			parts.forEach((part) => {
+				if (part.startsWith("*") && part.endsWith("*")) {
+					const italicText = part.slice(1, -1);
+					const textWidth = font.widthOfTextAtSize(italicText, size);
+					page.drawText(italicText, {
+						x: currentX,
+						y,
+						size,
+						font,
+						color,
+						maxWidth,
+					});
+					page.drawLine({
+						start: { x: currentX, y: y - 2 },
+						end: { x: currentX + textWidth, y: y - 2 },
+						thickness: 0.5,
+						color,
+					});
+					currentX += textWidth;
+				} else {
+					const textWidth = font.widthOfTextAtSize(part, size);
+					page.drawText(part, {
+						x: currentX,
+						y,
+						size,
+						font,
+						color,
+						maxWidth,
+					});
+					currentX += textWidth;
+				}
+			});
+			return currentX;
+		};
 
-		// Table settings
-		const tableX1 = 20,
-			tableX2 = 300;
-		const tableY = 80;
-		const rowHeight = 40,
-			columnWidths = [230, 50]; // Define columnWidths here
+		const tocEntries = [];
+		let pageCounter = 2;
+		const contentWidth = pageWidth - 100;
+		const bottomLimit = 70;
 
-		const leftTableData = allData.slice(0, allData.length - 1);
-		const rightTableData = allData.slice(1);
+		for (const item of allData) {
+			let page = doc.addPage();
+			const cleanTitle = sanitizeText(item.title || "Untitled");
+			await addPageDecorations(page, pageCounter, cleanTitle);
+			tocEntries.push({
+				title: cleanTitle,
+				pageNumber: pageCounter.toString(),
+			});
 
-		generateTable(doc, leftTableData, tableX1, tableY, columnWidths, rowHeight);
-		generateTable(
-			doc,
-			rightTableData,
-			tableX2,
-			tableY,
-			columnWidths,
-			rowHeight
-		);
+			page.drawText(cleanTitle, {
+				x: 50,
+				y: pageHeight - 100,
+				size: 18,
+				font: helveticaFont,
+				color: rgb(0, 0, 0),
+			});
 
-		// // Generate individual pages
-		// for (const { header, title, content } of allData) {
-		// 	doc.addPage();
-		// 	addPageDecorations(pageCounter++, header);
+			let currentY = pageHeight - 150;
+			const contentLines = splitTextIntoLines(
+				item.content || "",
+				contentWidth,
+				helveticaFont,
+				15
+			);
+			const textHeight = helveticaFont.heightAtSize(15);
+			const subheadingHeight = helveticaFont.heightAtSize(18);
+			const lineSpacing = 8; // Increased for better paragraph separation
 
-		// 	doc.fontSize(18).fillColor("black").text(title, 50, 100);
-		// 	doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
-		// }
-		// Individual pages with content and conditional image
-		for (const { header, title, content } of allData) {
-			doc.addPage();
-			addPageDecorations(pageCounter++, header);
+			for (let i = 0; i < contentLines.length; i++) {
+				let line = contentLines[i];
+				if (currentY - textHeight < bottomLimit) {
+					page = doc.addPage();
+					pageCounter++;
+					await addPageDecorations(page, pageCounter, cleanTitle);
+					currentY = pageHeight - 100;
+				}
 
-			// Add content
-			doc.fontSize(18).fillColor("black").text(title, 50, 100);
-			doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
-
-			// Calculate content height and available space
-			const contentBottom = doc.y; // Current y-position after adding content
-			const availableHeight = pageHeight - headerHeight - footerHeight; // ~737 points
-			const contentHeight = contentBottom - headerHeight; // Height used by content
-
-			// Check if content uses less than half the available space
-			if (contentHeight < availableHeight / 2) {
-				// Add image in remaining space
-				const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg"; //Nayan
-				//const imagePath =
-				//("C:\\Users\\manoj\\Desktop\\Mumbai\\pdfGenerator\\images\\logo2.jpg"); //Manoj
-				const imageX = (pageWidth - 200) / 2; // Center horizontally (image width = 200)
-				const imageY = contentBottom + 20; // 20 points below content
-				doc.image(imagePath, imageX, imageY, {
-					width: 200, // Larger image for remaining space
-					height: 200,
-				});
+				if (line === "") {
+					currentY -= textHeight + lineSpacing; // Consistent paragraph break
+				} else if (line.startsWith("###")) {
+					const subheadingText = line.replace("###", "").trim();
+					page.drawText(subheadingText, {
+						x: 50,
+						y: currentY,
+						size: 18,
+						font: helveticaFont,
+						color: rgb(0, 0, 0),
+						maxWidth: contentWidth,
+					});
+					currentY -= subheadingHeight + lineSpacing * 1.5; // Slightly more spacing after subheadings
+				} else if (line.startsWith("-")) {
+					const bulletText = line.replace("-", "").trim();
+					page.drawText("•", {
+						x: 50,
+						y: currentY,
+						size: 15,
+						font: helveticaFont,
+						color: rgb(0, 0, 0),
+					});
+					renderTextWithItalics(
+						page,
+						bulletText,
+						65,
+						currentY,
+						15,
+						helveticaFont,
+						contentWidth - 15,
+						rgb(0, 0, 0)
+					);
+					currentY -= textHeight + lineSpacing;
+				} else {
+					renderTextWithItalics(
+						page,
+						line,
+						50,
+						currentY,
+						15,
+						helveticaFont,
+						contentWidth,
+						rgb(0, 0, 0)
+					);
+					currentY -= textHeight + lineSpacing;
+				}
 			}
+
+			if (currentY - 220 > bottomLimit) {
+				const imageBytes = await fs.readFile(imagePath).catch(() => null);
+				if (imageBytes) {
+					const image = await doc.embedJpg(imageBytes);
+					page.drawImage(image, {
+						x: (pageWidth - 200) / 2,
+						y: currentY - 200,
+						width: 200,
+						height: 200,
+					});
+				}
+			}
+			pageCounter++;
 		}
 
-		doc.end();
-	} catch (error) {
-		console.error("Error generating PDF:", error);
-		if (!res.headersSent) {
-			res.status(500).json({ error: "Internal server error" });
+		const maxRowsPerPage = Math.floor((pageHeight - 210) / 40);
+		const entriesPerPage = maxRowsPerPage * 2;
+		const totalTocPages = Math.ceil(tocEntries.length / entriesPerPage);
+		const tableConfig = {
+			x1: 18,
+			x2: 298,
+			y: pageHeight - 110,
+			rowHeight: 30,
+			columnWidths: [220, 55],
+		};
+
+		for (let i = 0; i < totalTocPages; i++) {
+			const tocPage = doc.insertPage(i);
+			await addPageDecorations(tocPage, i + 1, "Table of Contents");
+
+			const start = i * entriesPerPage;
+			const end = Math.min(start + entriesPerPage, tocEntries.length);
+			const pageEntries = tocEntries.slice(start, end);
+
+			const leftTableData = pageEntries.filter((_, idx) => idx % 2 === 0);
+			const rightTableData = pageEntries.filter((_, idx) => idx % 2 === 1);
+
+			generateTable(
+				tocPage,
+				leftTableData,
+				tableConfig.x1,
+				tableConfig.y,
+				tableConfig.columnWidths,
+				tableConfig.rowHeight
+			);
+			generateTable(
+				tocPage,
+				rightTableData,
+				tableConfig.x2,
+				tableConfig.y,
+				tableConfig.columnWidths,
+				tableConfig.rowHeight,
+				true,
+				leftTableData.length
+			);
 		}
-		res.end();
+
+		const pdfBytes = await doc.save();
+		res.setHeader("Content-Type", "application/pdf");
+		res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+		res.send(Buffer.from(pdfBytes));
+	} catch (error) {
+		console.error("PDF Generation Error:", error.message, error.stack);
+		if (!res.headersSent) {
+			res.status(error.message.includes("Missing") ? 400 : 500).json({
+				error: error.message || "Internal server error",
+			});
+		}
 	}
 });
 
 app.listen(port, () => {
 	console.log(`Server running at http://localhost:${port}`);
-}); //hhh
+});

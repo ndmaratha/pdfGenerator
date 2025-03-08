@@ -10,7 +10,7 @@ app.use(cors());
 const allData = [
 	{
 		name: "Nayan",
-		header: "Header",
+		header: "Header 1",
 		title: "Page 1 Title",
 		content:
 			"Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100e of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100e of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100e of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100e of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100e of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100Table of Content lorem*100",
@@ -231,23 +231,28 @@ app.post("/generate-pdf", (req, res) => {
 			rowHeight
 		);
 
-		// // Generate individual pages
-		// for (const { header, title, content } of allData) {
-		// 	doc.addPage();
-		// 	addPageDecorations(pageCounter++, header);
+		const splitTextIntoLines = (doc, text, maxWidth) => {
+			const words = text.split(" ");
+			let lines = [];
+			let currentLine = "";
 
-		// 	doc.fontSize(18).fillColor("black").text(title, 50, 100);
-		// 	doc.fontSize(15).text(content, 50, 150, { width: pageWidth - 100 });
-		// }
-		// Individual pages with content and conditional image
-		// Individual pages with content and conditional image
-		// Individual pages with content and conditional image
-		// ... (rest of your code unchanged until the loop)
+			for (let word of words) {
+				let testLine = currentLine.length > 0 ? currentLine + " " + word : word;
+				if (doc.widthOfString(testLine) < maxWidth) {
+					currentLine = testLine;
+				} else {
+					lines.push(currentLine);
+					currentLine = word;
+				}
+			}
 
-		// Individual pages with content and overflow handling
-		// ... (rest of your code unchanged until the loop)
+			if (currentLine.length > 0) {
+				lines.push(currentLine);
+			}
 
-		// Individual pages with content and overflow handling
+			return lines;
+		};
+
 		for (const { header, title, content } of allData) {
 			doc.addPage();
 			addPageDecorations(pageCounter++, header);
@@ -257,50 +262,43 @@ app.post("/generate-pdf", (req, res) => {
 			const contentX = 50;
 			let contentY = 150;
 			const contentWidth = pageWidth - 100;
-			const availableHeight = pageHeight - headerHeight - footerHeight;
-			const bottomLimit = pageHeight - footerHeight;
-			let isFirstPage = true;
+			const availableHeight = pageHeight - headerHeight - footerHeight - 20;
+			const bottomLimit = pageHeight - footerHeight - 20;
 
 			doc.fontSize(15);
-			doc.text(content, contentX, contentY, {
-				width: contentWidth,
-				align: "left",
-				height: availableHeight - (contentY - headerHeight),
-				continued: true,
-			});
 
-			while (doc._continued) {
-				doc.addPage();
-				addPageDecorations(pageCounter++, header);
-				contentY = 100;
-				doc.fontSize(15).text("", contentX, contentY, {
+			let remainingText = content;
+			let lines = splitTextIntoLines(doc, remainingText, contentWidth);
+
+			for (let i = 0; i < lines.length; i++) {
+				let textHeight = doc.heightOfString(lines[i]);
+
+				// If the line doesn't fit, start a new page
+				if (contentY + textHeight > bottomLimit) {
+					doc.addPage();
+					addPageDecorations(pageCounter++, header);
+					contentY = 100;
+				}
+
+				doc.text(lines[i], contentX, contentY, {
 					width: contentWidth,
 					align: "left",
-					height: availableHeight,
-					continued: doc._continued,
 				});
+				contentY += textHeight + 5; // Move Y down for next line
 			}
 
+			// Add image if space is available
 			const contentBottom = doc.y;
-			const contentHeight =
-				contentBottom - (isFirstPage ? headerHeight + 50 : headerHeight);
-
-			if (contentHeight < availableHeight / 2) {
+			if (contentBottom + 220 < bottomLimit) {
 				const imagePath = "D:\\pdfGenerator\\images\\logo2.jpg";
 				const imageX = (pageWidth - 200) / 2;
-				const imageY = contentBottom + 20;
-				doc.image(imagePath, imageX, imageY, {
+				doc.image(imagePath, imageX, contentBottom + 20, {
 					width: 200,
 					height: 200,
 				});
 			}
-
-			isFirstPage = false;
 		}
 
-		// ... (rest of your code: doc.end(), catch block, app.listen unchanged)
-
-		// ... (rest of your code: doc.end(), catch block, app.listen unchanged)
 		doc.end();
 	} catch (error) {
 		console.error("Error generating PDF:", error);
